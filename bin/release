@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "open3"
+require "pathname"
+
+ROOT = Pathname.new(__dir__).join("..").expand_path
+VERSION_FILE = ROOT.join("lib/saxon/runtime/version.rb")
+
+def sh(cmd)
+  puts "==> #{cmd}"
+  success = system(cmd)
+  abort "Command failed: #{cmd}" unless success
+end
+
+def ensure_clean_worktree!
+  stdout, = Open3.capture2("git", "status", "--porcelain", chdir: ROOT.to_s)
+  abort "Working tree is dirty. Commit or stash changes before releasing." unless stdout.strip.empty?
+end
+
+def current_version
+  body = VERSION_FILE.read
+  body[/VERSION\s*=\s*"([^"]+)"/, 1] || abort("Could not read VERSION from #{VERSION_FILE}")
+end
+
+def tag_exists?(tag)
+  stdout, = Open3.capture2("git", "tag", "--list", tag, chdir: ROOT.to_s)
+  !stdout.strip.empty?
+end
+
+remote = "origin"
+abort "Usage: bin/release" unless ARGV.empty?
+
+abort "RUBYGEMS_API_KEY is not set" unless ENV.key?("RUBYGEMS_API_KEY")
+ensure_clean_worktree!
+version = current_version
+
+tag = "v#{version}"
+abort "Tag #{tag} already exists" if tag_exists?(tag)
+
+Dir.chdir(ROOT) do
+  sh("bundle exec rake spec")
+  sh("bundle exec rake build")
+  sh("gem push pkg/saxonc-runtime-#{version}.gem")
+  sh(["git", "tag", tag].join(" "))
+  sh(["git", "push", remote, "HEAD"].join(" "))
+  sh(["git", "push", remote, tag].join(" "))
+end
+
+puts "Release #{version} completed."
