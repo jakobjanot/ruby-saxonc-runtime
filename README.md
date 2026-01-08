@@ -37,14 +37,14 @@ gem install saxonc
 Or use mkmf flags when compiling `saxonc` from source:
 
 ```bash
-gem install saxonc -- --with-saxonche-dir=/path/to/SaxonCHE
+gem install saxonc -- --with-saxonc-dir=/path/to/SaxonCHE
 # or supply include/lib separately
 gem install saxonc -- \
-	--with-saxonche-include=/path/to/SaxonCHE/include \
-	--with-saxonche-lib=/path/to/SaxonCHE/lib
+  --with-saxonc-include=/path/to/SaxonCHE/include \
+  --with-saxonc-lib=/path/to/SaxonCHE/lib
 ```
 
-Precedence when locating SaxonC: `--with-saxonche-*` flags > `SAXONC_HOME` > cached runtime from this gem.
+Precedence when locating SaxonC: `--with-saxonc-*` flags > `SAXONC_HOME` > cached runtime from this gem.
 
 ## Development
 

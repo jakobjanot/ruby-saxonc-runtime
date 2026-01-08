@@ -32,7 +32,6 @@ def tag_exists?(tag)
   !stdout.strip.empty?
 end
 
-remote = "origin"
 abort "Usage: bin/release" unless ARGV.empty?
 
 abort "RUBYGEMS_API_KEY is not set" unless ENV.key?("RUBYGEMS_API_KEY")
