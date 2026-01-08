@@ -46,9 +46,9 @@ Dir.chdir(ROOT) do
   sh("bundle exec rake spec")
   sh("bundle exec rake build")
   sh("gem push pkg/saxonc-runtime-#{version}.gem")
-  sh(["git", "tag", tag].join(" "))
-  sh(["git", "push", remote, "HEAD"].join(" "))
-  sh(["git", "push", remote, tag].join(" "))
+  sh("git tag #{tag}")
+  sh("git push origin HEAD")
+  sh("git push origin #{tag}")
 end
 
 puts "Release #{version} completed."
