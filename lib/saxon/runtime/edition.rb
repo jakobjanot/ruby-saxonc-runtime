@@ -57,8 +57,8 @@ module Saxon::Runtime
 
         begin
           STDERR.puts "Downloading SaxonC from #{download_url}..."
-          URI.open(download_url) do |remote|
-            File.binwrite(zip_path, remote.read)
+          URI.open(download_url) do |saxon_archive|
+            File.binwrite(zip_path, saxon_archi.read)
           end
         rescue OpenURI::HTTPError => e
           raise "Failed to download SaxonC from #{download_url}, perhaps the version or platform is not supported: #{e.message}"
