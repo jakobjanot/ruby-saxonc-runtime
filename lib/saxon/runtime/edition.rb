@@ -1,3 +1,9 @@
+require "fileutils"
+require "rbconfig"
+require "tempfile"
+require "open-uri"
+require "zip"
+
 module Saxon::Runtime
   class Edition
     attr_reader :version, :platform
@@ -46,12 +52,13 @@ module Saxon::Runtime
       STDERR.puts "SaxonC does not appear to be installed in #{path}, installing!"
       FileUtils.mkdir_p Saxon::Runtime.base_dir
 
-      Tempfile.create("saxonc.zip") do |zip_file|
+      Dir.mktmpdir("saxonc") do |temp_dir|
+        zip_path = File.join(temp_dir, "saxonc.zip")
 
         begin
-          zip_file.open "wb" do |file|
-            STDERR.puts "Downloading SaxonC from #{download_url}..."
-            file.write URI.open(download_url).read
+          STDERR.puts "Downloading SaxonC from #{download_url}..."
+          URI.open(download_url) do |remote|
+            File.binwrite(zip_path, remote.read)
           end
         rescue OpenURI::HTTPError => e
           raise "Failed to download SaxonC from #{download_url}, perhaps the version or platform is not supported: #{e.message}"
@@ -60,21 +67,25 @@ module Saxon::Runtime
         end
 
         STDERR.puts "Extracting SaxonC..."
-        Zip::File.open(zip_file.path) do |zip_file|
-          zip_file.each do |entry|
-            entry.extract(File.join(temp_dir, entry.name))
+        Zip::File.open(zip_path) do |zip|
+          zip.each do |entry|
+            dest = File.join(temp_dir, entry.name)
+            FileUtils.mkdir_p(File.dirname(dest))
+            entry.extract(dest) { true }
           end
         end
 
-        extracted_dir = Dir['saxonc*'].find { |path| File.directory?(path) }
+        extracted_dir = Dir.glob(File.join(temp_dir, "*"))
+                           .find { |p| File.directory?(p) }
 
-        if FileUtils.mv extracted_dir, path
-          STDOUT.puts "\nSuccessfully installed SaxonC to #{path}!\n"
-        end
+        raise "Failed to extract SaxonC archive" unless extracted_dir
 
-        if FileUtils.rm_rf temp_dir
-          STDOUT.puts "Removed temporarily downloaded files."
-        end
+        FileUtils.mkdir_p(File.dirname(path))
+        FileUtils.rm_rf(path)
+        FileUtils.mv(extracted_dir, path)
+        STDOUT.puts "\nSuccessfully installed SaxonC to #{path}!\n"
+      ensure
+        FileUtils.rm_rf(temp_dir) if temp_dir && Dir.exist?(temp_dir)
       end
 
       raise "Failed to install SaxonC. Sorry :(" unless File.exist?(path)
@@ -119,9 +130,6 @@ module Saxon::Runtime
       self.class.name.split('::').last
     end
 
-    def temp_path
-      ENV['TMPDIR'] || ENV['TEMP'] || '/tmp'
-    end
   end
 
   HE = Class.new(Edition)

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / ${{ matrix.edition }}
+    runs-on: ${{ matrix.os }}
+    env:
+      BUNDLE_WITHOUT: "development"
+      SAXONC_EDITION: ${{ matrix.edition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14]
+        edition: [he, pe, ee]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.5"
+          bundler-cache: true
+
+      - name: Cache SaxonC downloads
+        id: cache-saxonc
+        uses: actions/cache@v4
+        with:
+          path: ~/.saxonc
+          key: saxonc-runtime-${{ runner.os }}-${{ matrix.edition }}-${{ hashFiles('lib/saxon/runtime/version.rb') }}
+
+      - name: Install dependencies
+        run: bundle install --jobs 4
+
+      - name: Install saxonc-runtime gem
+        run: gem install saxonc-runtime
+
+      - name: Install SaxonC via saxonc-runtime
+        run: |
+          ruby -rsaxon/runtime -e "ed = Saxon::Runtime.const_get(ENV.fetch('SAXONC_EDITION','he').upcase) rescue Saxon::Runtime::HE; ed = ed.new; Saxon::Runtime.edition = ed; ed.ensure_installed!; puts ed.path"
+
+      - name: Run specs
+        run: bundle exec rspec

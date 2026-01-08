@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     saxonc-runtime (12.9.0.0)
+      rubyzip
 
 GEM
   remote: https://rubygems.org/
@@ -67,6 +68,7 @@ GEM
       parser (>= 3.3.7.2)
       prism (~> 1.4)
     ruby-progressbar (1.13.0)
+    rubyzip (3.2.2)
     stringio (3.1.9)
     tsort (0.2.0)
     unicode-display_width (3.2.0)
@@ -114,6 +116,7 @@ CHECKSUMS
   rubocop (1.81.7) sha256=6fb5cc298c731691e2a414fe0041a13eb1beed7bab23aec131da1bcc527af094
   rubocop-ast (1.48.0) sha256=22df9bbf3f7a6eccde0fad54e68547ae1e2a704bf8719e7c83813a99c05d2e76
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
+  rubyzip (3.2.2) sha256=c0ed99385f0625415c8f05bcae33fe649ed2952894a95ff8b08f26ca57ea5b3c
   saxonc-runtime (12.9.0.0)
   stringio (3.1.9) sha256=c111af13d3a73eab96a3bc2655ecf93788d13d28cb8e25c1dcbff89ace885121
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f
