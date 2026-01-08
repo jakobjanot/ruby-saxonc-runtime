@@ -19,8 +19,12 @@ def ensure_clean_worktree!
 end
 
 def current_version
-  body = VERSION_FILE.read
-  body[/VERSION\s*=\s*"([^"]+)"/, 1] || abort("Could not read VERSION from #{VERSION_FILE}")
+  require VERSION_FILE.to_s
+  if defined?(Saxon::Runtime::VERSION)
+    Saxon::Runtime::VERSION
+  else
+    abort("Could not read VERSION from #{VERSION_FILE}")
+  end
 end
 
 def tag_exists?(tag)
