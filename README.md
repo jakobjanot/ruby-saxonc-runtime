@@ -1,35 +1,56 @@
-# Saxon::Runtime
+# saxonc-runtime
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/saxon/runtime`. To experiment with that code, run `bin/console` for an interactive prompt.
+A small helper gem that downloads and exposes SaxonC binaries for the `saxonc` gem (or any consumer that needs `SAXONC_HOME`). It detects your platform, fetches the right archive, and keeps it in a cache.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install saxonc-runtime
+# or
+bundle add saxonc-runtime
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+By default it installs the Home Edition (HE). Pick another edition with:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+SAXONC_EDITION=pe gem install saxonc-runtime
+# or ee
 ```
 
-## Usage
+Force a fresh download (ignore cache):
 
-TODO: Write usage instructions here
+```bash
+SAXONC_LIBS_FORCE=1 gem install saxonc-runtime
+```
+
+## Using with `saxonc`
+
+When `saxonc` builds its native extension it will, by default, ask this gem for `SAXONC_HOME`. You don't need to do anything extra.
+
+If you already have a SaxonC install, skip the download and point `saxonc` (and this helper) at it:
+
+```bash
+export SAXONC_HOME=/Users/janot/Code/ruby-saxonc/SaxonCHE-macos-arm64-12-9-0/SaxonCHE
+gem install saxonc
+```
+
+Or use mkmf flags when compiling `saxonc` from source:
+
+```bash
+gem install saxonc -- --with-saxonche-dir=/path/to/SaxonCHE
+# or supply include/lib separately
+gem install saxonc -- \
+	--with-saxonche-include=/path/to/SaxonCHE/include \
+	--with-saxonche-lib=/path/to/SaxonCHE/lib
+```
+
+Precedence when locating SaxonC: `--with-saxonche-*` flags > `SAXONC_HOME` > cached runtime from this gem.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```bash
+bundle install
+bundle exec rake spec
+```
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/saxon-runtime.
+To release, bump `lib/saxon/runtime/version.rb`, tag `vX.Y.Z`, and push; the GitHub Actions release workflow will build, attach the gem to the GitHub Release, and publish to RubyGems.
